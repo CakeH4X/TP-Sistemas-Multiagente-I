@@ -199,12 +199,13 @@ Failures in the first two layers loop back to `sql_generator` with the critic's 
 
 ## Demo
 
-See [`DEMO.md`](DEMO.md) for a scripted end-to-end run covering:
+See [`docs/DEMO.md`](docs/DEMO.md) for a scripted end-to-end run covering:
 - Schema documentation with a human revision cycle
 - Three different NL queries (simple count, multi-table join, aggregation)
 - One follow-up refinement using session context
 
-See [`REPORT.md`](REPORT.md) for the 1–2 page design report.
+See [`docs/REPORT.md`](docs/REPORT.md) for the 1–2 page design report, and
+[`docs/spec.md`](docs/spec.md) for the original technical specification.
 
 ---
 
@@ -243,11 +244,12 @@ TP/
 ├── docker-compose.yml
 ├── pyproject.toml
 ├── .env.example
-├── README.md                # this file
+├── README.md                # entry point (this file)
 ├── CLAUDE.md                # dev notes + known limitations + future improvements
-├── DEMO.md                  # scripted demo
-├── REPORT.md                # 1-2 page design report
-└── spec.md                  # original technical spec
+└── docs/
+    ├── REPORT.md            # 1–2 page design report
+    ├── DEMO.md              # scripted demo scenarios
+    └── spec.md              # original technical spec
 ```
 
 ---

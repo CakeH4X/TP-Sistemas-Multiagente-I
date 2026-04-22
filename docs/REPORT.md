@@ -83,5 +83,5 @@ Full list in `CLAUDE.md § Known limitations`, including how to evolve past each
 
 - 167 tests (unit + functional + integration), all passing with `uv run pytest tests/`.
 - `ruff check` + `ruff format --check` clean.
-- Manual demo scenarios documented in `DEMO.md` and executable as curl sequences or via Streamlit.
+- Manual demo scenarios documented in [`DEMO.md`](DEMO.md) and executable as curl sequences or via Streamlit.
 - All runs use the mandatory DVD Rental dataset (15 tables, 1000 films, 14596 rentals).
