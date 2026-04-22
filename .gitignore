@@ -1,0 +1,53 @@
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Packaging / build
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Testing & linting caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# LangSmith/LangChain
+.langchain.db
+
+# Optional large data files — dvdrental.sql IS checked in for reproducibility;
+# .tar / .zip variants are not needed
+data/dvdrental.tar
+data/dvdrental.zip
+
+# Streamlit
+.streamlit/secrets.toml

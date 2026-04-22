@@ -1,0 +1,110 @@
+services:
+  nl-query-agent:
+    build:
+      context: .
+      dockerfile: containers/Dockerfile
+      target: production
+    image: nl-query-agent
+    container_name: nl-query-agent
+    ports:
+      - "8002:8000"
+    env_file:
+      - .env
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://dvdrental:dvdrental@postgres:5432/dvdrental
+      - METADATA_SCHEMA=agent_metadata
+      - LLM_SERVICE_URL=${LLM_SERVICE_URL:-https://sa-llmproxy.it.itba.edu.ar}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4.1-mini}
+      - GRAPH_MAX_ITERATIONS=15
+      - SQL_MAX_ROWS=100
+      - SQL_TIMEOUT_SECONDS=30
+    volumes:
+      - ./src:/app/src:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  streamlit-ui:
+    build:
+      context: .
+      dockerfile: containers/Dockerfile
+      target: production
+    image: nl-query-agent-ui
+    container_name: nl-query-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://nl-query-agent:8000
+      - STREAMLIT_PORT=8501
+    command: ["uv", "run", "streamlit", "run", "src/ui/app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]
+    depends_on:
+      nl-query-agent:
+        condition: service_healthy
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  testing:
+    build:
+      context: .
+      dockerfile: containers/Dockerfile.testing
+      target: testing
+    image: nl-query-agent-testing
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./data:/app/data:ro
+    environment:
+      - PYTHONPATH=/app/src
+      - DATABASE_URL=postgresql://dvdrental:dvdrental@postgres:5432/dvdrental
+      - METADATA_SCHEMA=agent_metadata
+      - LLM_SERVICE_URL=${LLM_SERVICE_URL:-https://sa-llmproxy.it.itba.edu.ar}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4.1-mini}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - test-network
+    command: ["sleep", "infinity"]
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: nl-query-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: dvdrental
+      POSTGRES_PASSWORD: dvdrental
+      POSTGRES_DB: dvdrental
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/dvdrental.sql:/docker-entrypoint-initdb.d/01-dvdrental.sql:ro
+      - ./data/init_metadata_schema.sql:/docker-entrypoint-initdb.d/02-init-metadata.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dvdrental -d dvdrental"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - test-network
+
+volumes:
+  postgres_data:
+
+networks:
+  test-network:
+    driver: bridge
