@@ -66,13 +66,18 @@ A LangGraph-based multi-agent system that lets users query the PostgreSQL **DVD 
 
 ## Setup and run
 
+> Developer-side details (conventions, known limitations, troubleshooting hints, future work)
+> live in [`CLAUDE.md`](CLAUDE.md). Long-form docs are under [`docs/`](docs/).
+
 ### Prerequisites
 - Docker Desktop running
 - Python 3.13 (for host development; not needed if you use Docker only)
 - `uv` package manager — `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
 ### 1. DVD Rental data
-Download `dvdrental.sql` from the [Neon sample databases](https://neon.com/postgresql/postgresql-getting-started/postgresql-sample-database) page (direct URL: `https://raw.githubusercontent.com/neondatabase/postgres-sample-dbs/main/dvdrental.sql`) and save it to `data/dvdrental.sql`. PostgreSQL's Docker image auto-loads it on first startup.
+The dump (`data/dvdrental.sql`) is already committed in the repo, so no download
+is needed. PostgreSQL's Docker image auto-loads it on first startup. Origin:
+[Neon sample databases](https://neon.com/postgresql/postgresql-getting-started/postgresql-sample-database).
 
 ### 2. Environment
 ```bash
@@ -109,6 +114,11 @@ uv run pytest tests/
 # Lint
 uv run ruff check --fix src/ tests/ && uv run ruff format src/ tests/
 ```
+
+> **Troubleshooting:** if `uv run` fails with `cannot import name 'abc' from
+> partially initialized module 'psycopg.pq'`, the venv was partially built.
+> Reset it with `rm -rf .venv && uv sync`. See [`CLAUDE.md § First-time setup`](CLAUDE.md)
+> for more.
 
 ### 4. Confirm DVD Rental is loaded
 ```bash
