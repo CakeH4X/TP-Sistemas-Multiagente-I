@@ -8,17 +8,46 @@ Two-agent LangGraph system for natural language querying over the PostgreSQL DVD
 
 Python 3.13, FastAPI, LangGraph, langchain-openai (via LiteLLM proxy), MCP tools, psycopg, Streamlit, pytest, ruff.
 
+## First-time setup (fresh clone)
+
+Prerequisites: Docker Desktop running, Python 3.13, [`uv`](https://docs.astral.sh/uv/) installed (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
+
+```bash
+# 1. Configure secrets — `.env` is git-ignored; copy from the example and fill in
+cp .env.example .env
+# Edit .env and set LLM_API_KEY=sk-...  (LiteLLM proxy key)
+
+# 2. Install Python deps into a fresh .venv
+uv sync
+
+# 3. Start Postgres + auto-load the DVD Rental dump (data/dvdrental.sql)
+docker compose up postgres -d
+
+# 4. Wait for Postgres to be healthy (init takes ~30 s on first run)
+docker compose ps postgres   # STATUS should read "(healthy)"
+
+# 5. Sanity-check: the 15 DVD Rental tables are present
+docker compose exec postgres psql -U dvdrental -d dvdrental -c "\dt"
+```
+
+If `uv run` later fails with a psycopg `cannot import name 'abc'` ImportError, the venv was partially built — fix with:
+```bash
+rm -rf .venv && uv sync
+```
+
 ## Running
 
 ```bash
-# Start Postgres
-docker compose up postgres -d
-
 # Start FastAPI (host)
 PYTHONPATH=src DATABASE_URL=postgresql://dvdrental:dvdrental@localhost:5433/dvdrental uv run uvicorn api.main:get_app --factory --port 8000
 
-# Start Streamlit (host)
+# Start Streamlit (host)  — open http://localhost:8501 once it's up
 PYTHONPATH=src API_BASE_URL=http://localhost:8000 uv run streamlit run src/ui/app.py
+
+# OR everything in Docker (API + UI + Postgres):
+docker compose up -d
+# UI:  http://localhost:8501
+# API: http://localhost:8002/docs
 
 # Run tests
 uv run pytest tests/
